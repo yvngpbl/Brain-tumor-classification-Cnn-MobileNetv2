@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis MRI Otak | Pusat Diagnosa Digital</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        .premium-shadow {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+        }
+
+        .medical-gradient {
+            background: linear-gradient(135deg, #075985 0%, #0369a1 100%);
+        }
+
+        .upload-card {
+            border: 2px dashed #e2e8f0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .upload-card:hover {
+            border-color: #0ea5e9;
+            background-color: #f0f9ff;
+            transform: scale(1.01);
+        }
+
+        .step-number {
+            background: #e0f2fe;
+            color: #0369a1;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        /* Animasi Loading */
+        .dot-pulse {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 medical-gradient rounded-lg flex items-center justify-center shadow-lg shadow-blue-200">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <span class="font-extrabold text-xl tracking-tight text-slate-800">Tumor Brain<span class="text-sky-600">Classification</span></span>
+            </div>
+            <div class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-500">
+                <a href="#" class="text-sky-600">Beranda</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-6 py-12 md:py-20">
+        <div class="grid lg:grid-cols-2 gap-16 items-start">
+            
+            <div class="space-y-10">
+                <section>
+                    <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 leading-[1.15] mb-6">
+                        Klasifikasi tumor otak dengan <span class="text-sky-600">Machine learning.</span>
+                    </h1>
+                    <p class="text-lg text-slate-500 leading-relaxed">
+                        Unggah citra MRI Anda untuk mendapatkan analisis awal instan. Dikembangkan untuk membantu profesional medis dalam mempercepat proses diagnosa.
+                    </p>
+                </section>
+
+                <div class="bg-white p-2 rounded-[2.5rem] premium-shadow">
+                    <form action="/" method="POST" enctype="multipart/form-data" id="scanForm">
+                        <label id="dropZone" class="upload-card rounded-[2rem] p-12 flex flex-col items-center justify-center cursor-pointer relative overflow-hidden">
+                            <input type="file" name="image" id="fileInput" class="hidden" accept="image/*" required onchange="handleFile(this)">
+                            
+                            <div id="uploadUI" class="text-center">
+                                <div class="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-slate-100">
+                                    <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                </div>
+                                <p class="text-slate-900 font-bold text-lg mb-1">Pilih Gambar MRI</p>
+                                <p class="text-slate-400 text-sm">Seret gambar atau klik untuk menelusuri</p>
+                            </div>
+
+                            <div id="previewUI" class="hidden w-full animate__animated animate__fadeIn">
+                                <img id="imgPreview" src="#" class="rounded-2xl shadow-xl max-h-72 mx-auto border-4 border-white">
+                                <p class="text-center mt-4 text-xs font-bold text-sky-600 uppercase tracking-widest">Gambar Siap Dianalisis</p>
+                            </div>
+                        </label>
+
+                        <button type="submit" class="w-full medical-gradient text-white font-bold py-5 rounded-[1.8rem] mt-2 transition-all hover:shadow-2xl hover:shadow-blue-200 flex items-center justify-center gap-3">
+                            <span id="btnLabel">Jalankan Analisis Digital</span>
+                            <div id="loadingPulse" class="hidden flex gap-1">
+                                <div class="w-2 h-2 bg-white rounded-full dot-pulse"></div>
+                                <div class="w-2 h-2 bg-white rounded-full dot-pulse [animation-delay:0.2s]"></div>
+                                <div class="w-2 h-2 bg-white rounded-full dot-pulse [animation-delay:0.4s]"></div>
+                            </div>
+                        </button>
+                    </form>
+
+                    <div class="mt-8 px-6 pb-6">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Panduan Pengunggahan
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 transition-colors hover:bg-white hover:border-sky-100">
+                                <p class="text-[13px] font-bold text-slate-800 mb-1 leading-tight text-sky-600">01. Gambar Jelas</p>
+                                <p class="text-[11px] text-slate-500 leading-relaxed text-wrap">Foto harus tajam dan tidak buram (blur).</p>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 transition-colors hover:bg-white hover:border-sky-100">
+                                <p class="text-[13px] font-bold text-slate-800 mb-1 leading-tight text-sky-600">02. Hasil MRI</p>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">Wajib berupa hasil scan MRI otak yang asli.</p>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 transition-colors hover:bg-white hover:border-sky-100">
+                                <p class="text-[13px] font-bold text-slate-800 mb-1 leading-tight text-sky-600">03. Posisi Presisi</p>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">Posisi objek harus tegak lurus dan di tengah.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:sticky lg:top-32">
+                {% if result %}
+                <div class="bg-white rounded-[2.5rem] p-10 premium-shadow border border-slate-50 animate__animated animate__fadeInRight">
+                    <div class="flex items-start justify-between mb-8">
+                        <div class="space-y-1">
+                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Hasil Klasifikasi AI</p>
+                            <h2 class="text-3xl font-extrabold text-slate-900">{{ result.replace('_', ' ').title() }}</h2>
+                        </div>
+                        <div class="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-2xl text-xs font-bold border border-emerald-100">
+                            {{ confidence }} Akurat
+                        </div>
+                    </div>
+
+                    <div class="space-y-8">
+                        <div class="flex gap-4">
+                            <div class="step-number shrink-0">1</div>
+                            <div class="space-y-1">
+                                <h4 class="text-sm font-bold text-slate-800">Analisis Karakteristik</h4>
+                                <p class="text-sm text-slate-500 leading-relaxed">{{ desc }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <div class="step-number shrink-0">2</div>
+                            <div class="space-y-1">
+                                <h4 class="text-sm font-bold text-slate-800">Rekomendasi Medis</h4>
+                                <p class="text-sm text-slate-500 leading-relaxed italic text-sky-800">"{{ note }}"</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-12 pt-8 border-t border-slate-50 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sistem Terverifikasi</span>
+                        </div>
+                        <a href="/" class="text-sm font-bold text-sky-600 hover:text-sky-700">Mulai Baru &rarr;</a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="h-[550px] border-2 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center text-center p-12 opacity-40">
+                    <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    </div>
+                    <p class="text-slate-400 font-medium">Laporan hasil pemindaian Anda akan tampil secara otomatis di sini.</p>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="max-w-6xl mx-auto px-6 py-12 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
+        <p class="text-slate-400 text-xs font-medium italic text-center md:text-left">
+            Penafian: Alat ini ditujukan untuk riset dan bantuan awal, bukan merupakan pengganti saran medis profesional.
+        </p>
+        <div class="flex gap-4 opacity-50">
+            <div class="w-8 h-8 bg-slate-200 rounded-full"></div>
+            <div class="w-8 h-8 bg-slate-200 rounded-full"></div>
+        </div>
+    </footer>
+
+    <script>
+        function handleFile(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imgPreview').src = e.target.result;
+                    document.getElementById('uploadUI').classList.add('hidden');
+                    document.getElementById('previewUI').classList.remove('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        document.getElementById('scanForm').onsubmit = function() {
+            document.getElementById('loadingPulse').classList.remove('hidden');
+            document.getElementById('btnLabel').innerText = "Menganalisis Data Citra";
+        };
+    </script>
+</body>
+</html>
